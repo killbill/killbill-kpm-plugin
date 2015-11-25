@@ -39,7 +39,11 @@ module KPM
     def handle_event(command, artifact_id, version=nil, group_id=nil, packaging=nil, classifier=nil, type=nil, force_download=false)
       if command == 'INSTALL_PLUGIN'
         info = ::KPM::PluginsInstaller.instance.install(artifact_id, version, group_id, packaging, classifier, type, force_download)
-        notify_fs_change(info[:bundle_dir], :NEW_VERSION)
+        if info.nil?
+          @logger.warn("Error during installation of plugin #{artifact_id}")
+        else
+          notify_fs_change(info[:bundle_dir], :NEW_VERSION)
+        end
       elsif command == 'UNINSTALL_PLUGIN'
         modified = ::KPM::PluginsInstaller.instance.uninstall(plugin_name, plugin_version)
         modified.each do |path|
