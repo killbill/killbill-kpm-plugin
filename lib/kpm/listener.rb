@@ -47,7 +47,7 @@ module KPM
       elsif command == 'UNINSTALL_PLUGIN'
         modified = ::KPM::PluginsInstaller.instance.uninstall(plugin_name, plugin_version)
         modified.each do |path|
-          notify_fs_change(path, :UNINSTALL)
+          notify_fs_change(path, :DISABLED)
         end
       else
         @logger.info("Ignoring unsupported command #{command}")
