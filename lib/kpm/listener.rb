@@ -1,3 +1,5 @@
+require 'nexus_cli'
+
 module KPM
   class Listener < Killbill::Plugin::Notification
 
