@@ -60,7 +60,7 @@ module KPM
       return if path.nil?
 
       # Plugin name should be the directory name (path is something like /var/tmp/bundles/plugins/ruby/killbill-stripe/2.0.0)
-      fs_info = path.split('/')
+      fs_info = path.to_s.split('/')
       plugin_type = fs_info[-3].upcase
       plugin_name = fs_info[-2]
       plugin_version = fs_info[-1]
