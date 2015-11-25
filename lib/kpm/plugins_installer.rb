@@ -36,6 +36,10 @@ module KPM
       KPM::PluginsDirectory.lookup(artifact_id, latest)
     end
 
+    def all(latest=true)
+      KPM::PluginsDirectory.all(latest)
+    end
+
     private
 
     def configure!(config_file)

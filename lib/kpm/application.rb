@@ -8,22 +8,28 @@ configure do
   end
 end
 
-# Lookup a plugin
+# Lookup plugins
 get '/plugins/killbill-kpm/plugins', :provides => 'json' do
-  group_id, artifact_id, packaging, classifier, version, type = ::KPM::PluginsInstaller.instance.lookup params[:artifact_id] || params[:name],
-                                                                                                        params[:latest]
+  artifact_id = params[:artifact_id] || params[:name]
+  latest = params[:latest] == 'false' ? false : true
 
   if artifact_id.nil?
-    status 404
+    ::KPM::PluginsInstaller.instance.all(latest).to_json
   else
-    {
-        :group_id => group_id,
-        :artifact_id => artifact_id,
-        :packaging => packaging,
-        :classifier => classifier,
-        :version => version,
-        :type => type
-    }.to_json
+    group_id, artifact_id, packaging, classifier, version, type = ::KPM::PluginsInstaller.instance.lookup artifact_id, latest
+
+    if artifact_id.nil?
+      status 404
+    else
+      {
+          :group_id => group_id,
+          :artifact_id => artifact_id,
+          :packaging => packaging,
+          :classifier => classifier,
+          :version => version,
+          :type => type
+      }.to_json
+    end
   end
 end
 
