@@ -45,7 +45,7 @@ module KPM
           notify_fs_change(info[:bundle_dir], :NEW_VERSION)
         end
       elsif command == 'UNINSTALL_PLUGIN'
-        modified = ::KPM::PluginsInstaller.instance.uninstall(plugin_name, plugin_version)
+        modified = ::KPM::PluginsInstaller.instance.uninstall(artifact_id, version)
         modified.each do |path|
           notify_fs_change(path, :DISABLED)
         end
