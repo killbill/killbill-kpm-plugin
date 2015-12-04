@@ -18,15 +18,26 @@ module KPM
       end
 
       broadcast_metadata = event.meta_data.nil? ? {} : JSON.parse(event.meta_data)
-      service = broadcast_metadata['service']
       command = broadcast_metadata['commandType']
+      return if command != 'INSTALL_PLUGIN' && command != 'UNINSTALL_PLUGIN'
+
+      service = broadcast_metadata['service']
       event_json = broadcast_metadata['eventJson'].nil? ? {} : JSON.parse(broadcast_metadata['eventJson'])
-      @logger.info "Received #{event.event_type} event: service=#{service} command=#{command} event=#{event_json}"
 
       properties = properties_to_hash(event_json['properties'])
+
+      @logger.info "Received #{event.event_type} event: service=#{service} command=#{command} event=#{event_json}"
+
+      return if !validate_inputs(command, properties, Proc.new { |command, properties, property_name|
+                                          if properties[property_name].nil?
+                                            @logger.info("Cannot run #{command}: missing property #{property_name}")
+                                            return false
+                                          end
+                                        })
+
       handle_event(command,
-                   properties['pluginArtifactId'] || event_json['pluginName'],
-                   event_json['pluginVersion'],
+                   properties['pluginArtifactId'],
+                   properties['pluginVersion'],
                    properties['pluginGroupId'],
                    properties['pluginPackaging'],
                    properties['pluginClassifier'],
@@ -36,7 +47,19 @@ module KPM
 
     private
 
+    # Check for mandatory properties
+    def validate_inputs(command, properties, proc_validation)
+      proc_validation.call(command, properties, 'pluginGroupId')
+      proc_validation.call(command, properties, 'pluginArtifactId')
+      proc_validation.call(command, properties, 'pluginVersion')
+      proc_validation.call(command, properties, 'pluginType')
+      return true
+    end
+
     def handle_event(command, artifact_id, version=nil, group_id=nil, packaging=nil, classifier=nil, type=nil, force_download=false)
+
+      @logger.info "handle_event command=#{command}, artifact_id=#{artifact_id}, version=#{version}, group_id=#{group_id}, packaging=#{packaging}, classifier=#{classifier}, type=#{type}, force_download=#{force_download}"
+
       if command == 'INSTALL_PLUGIN'
         info = ::KPM::PluginsInstaller.instance.install(artifact_id, version, group_id, packaging, classifier, type, force_download)
         if info.nil?
@@ -50,7 +73,7 @@ module KPM
           notify_fs_change(path, :DISABLED)
         end
       else
-        @logger.info("Ignoring unsupported command #{command}")
+        @logger.warn("Ignoring unsupported command #{command}")
       end
     rescue NexusCli::ArtifactNotFoundException
       @logger.warn("Unable to #{command} #{plugin_name}: artifact was not found in Nexus")
