@@ -62,6 +62,12 @@ module KPM
       # Plugin name should be the directory name (path is something like /var/tmp/bundles/plugins/ruby/killbill-stripe/2.0.0)
       fs_info = path.to_s.split('/')
       plugin_type = fs_info[-3].upcase
+
+      unless %w(JAVA RUBY).include?(plugin_type)
+        @logger.warn("Invalid plugin type #{plugin_type} (path #{path}): Kill Bill won't be notified of new state #{state}")
+        return
+      end
+
       plugin_name = fs_info[-2]
       plugin_version = fs_info[-1]
       @kb_apis.plugins_info_api.notify_of_state_changed(state, plugin_name, plugin_version, plugin_type)
