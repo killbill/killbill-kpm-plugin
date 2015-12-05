@@ -36,7 +36,7 @@ module KPM
                                         })
 
       handle_event(command,
-                   properties['pluginArtifactId'],
+                   properties['pluginKey'] || properties['pluginArtifactId'],
                    properties['pluginVersion'],
                    properties['pluginGroupId'],
                    properties['pluginPackaging'],
@@ -49,10 +49,12 @@ module KPM
 
     # Check for mandatory properties
     def validate_inputs(command, properties, proc_validation)
-      proc_validation.call(command, properties, 'pluginGroupId')
-      proc_validation.call(command, properties, 'pluginArtifactId')
-      proc_validation.call(command, properties, 'pluginVersion')
-      proc_validation.call(command, properties, 'pluginType')
+      if properties['pluginKey'].nil?
+        proc_validation.call(command, properties, 'pluginGroupId')
+        proc_validation.call(command, properties, 'pluginArtifactId')
+        proc_validation.call(command, properties, 'pluginVersion')
+        proc_validation.call(command, properties, 'pluginType')
+      end
       return true
     end
 
