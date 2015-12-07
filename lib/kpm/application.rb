@@ -4,6 +4,7 @@ configure do
     require 'logger'
     ::KPM::PluginsInstaller.instance.initialize!('/var/tmp/bundles/plugins/ruby/kpm/0.0.1',
                                                  File.expand_path(File.dirname(__FILE__) + '../../../'),
+                                                 nil,
                                                  Logger.new(STDOUT))
   end
 end
@@ -35,13 +36,28 @@ end
 
 # Install a plugin
 post '/plugins/killbill-kpm/plugins', :provides => 'json' do
-  info = ::KPM::PluginsInstaller.instance.install params[:artifact_id] || params[:name],
-                                                  params[:version],
-                                                  params[:group_id],
-                                                  params[:packaging],
-                                                  params[:classifier],
-                                                  params[:type],
-                                                  params[:force_download]
+  if !request.body.nil?
+    type = (params[:type] || 'java').downcase
+
+    info = Dir.mktmpdir do |dir|
+      plugin_path = File.join(dir, params[:filename] || "#{params[:name]}.#{type == 'java' ? 'jar' : 'tar.gz'}")
+      File.open(plugin_path, 'w') do |file|
+        file.write(request.body.read)
+      end
+      ::KPM::PluginsInstaller.instance.install_from_fs plugin_path,
+                                                       params[:name],
+                                                       params[:version],
+                                                       type
+    end
+  else
+    info = ::KPM::PluginsInstaller.instance.install params[:artifact_id] || params[:name],
+                                                    params[:version],
+                                                    params[:group_id],
+                                                    params[:packaging],
+                                                    params[:classifier],
+                                                    params[:type],
+                                                    params[:force_download]
+  end
 
   if info.nil?
     status 400

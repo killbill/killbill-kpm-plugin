@@ -6,7 +6,7 @@ module KPM
     def start_plugin
       super
 
-      ::KPM::PluginsInstaller.instance.initialize!(@root, @conf_dir, @logger)
+      ::KPM::PluginsInstaller.instance.initialize!(@root, @conf_dir, @kb_apis, @logger)
     end
 
     def on_event(event)
@@ -59,43 +59,17 @@ module KPM
     end
 
     def handle_event(command, artifact_id, version=nil, group_id=nil, packaging=nil, classifier=nil, type=nil, force_download=false)
-
       @logger.info "handle_event command=#{command}, artifact_id=#{artifact_id}, version=#{version}, group_id=#{group_id}, packaging=#{packaging}, classifier=#{classifier}, type=#{type}, force_download=#{force_download}"
 
       if command == 'INSTALL_PLUGIN'
-        info = ::KPM::PluginsInstaller.instance.install(artifact_id, version, group_id, packaging, classifier, type, force_download)
-        if info.nil?
-          @logger.warn("Error during installation of plugin #{artifact_id}")
-        else
-          notify_fs_change(info[:bundle_dir], :NEW_VERSION)
-        end
+        ::KPM::PluginsInstaller.instance.install(artifact_id, version, group_id, packaging, classifier, type, force_download)
       elsif command == 'UNINSTALL_PLUGIN'
-        modified = ::KPM::PluginsInstaller.instance.uninstall(artifact_id, version)
-        modified.each do |path|
-          notify_fs_change(path, :DISABLED)
-        end
+        ::KPM::PluginsInstaller.instance.uninstall(artifact_id, version)
       else
         @logger.warn("Ignoring unsupported command #{command}")
       end
     rescue NexusCli::ArtifactNotFoundException
       @logger.warn("Unable to #{command} #{plugin_name}: artifact was not found in Nexus")
-    end
-
-    def notify_fs_change(path, state)
-      return if path.nil?
-
-      # Plugin name should be the directory name (path is something like /var/tmp/bundles/plugins/ruby/killbill-stripe/2.0.0)
-      fs_info = path.to_s.split('/')
-      plugin_type = fs_info[-3].upcase
-
-      unless %w(JAVA RUBY).include?(plugin_type)
-        @logger.warn("Invalid plugin type #{plugin_type} (path #{path}): Kill Bill won't be notified of new state #{state}")
-        return
-      end
-
-      plugin_name = fs_info[-2]
-      plugin_version = fs_info[-1]
-      @kb_apis.plugins_info_api.notify_of_state_changed(state, plugin_name, plugin_version, plugin_type)
     end
 
     def properties_to_hash(properties)
