@@ -36,7 +36,9 @@ module KPM
                                         })
 
       handle_event(command,
-                   properties['pluginKey'] || properties['pluginArtifactId'],
+                   properties['pluginKey'],
+                   properties['pluginName'],
+                   properties['pluginArtifactId'],
                    properties['pluginVersion'],
                    properties['pluginGroupId'],
                    properties['pluginPackaging'],
@@ -49,22 +51,29 @@ module KPM
 
     # Check for mandatory properties
     def validate_inputs(command, properties, proc_validation)
-      if properties['pluginKey'].nil?
-        proc_validation.call(command, properties, 'pluginGroupId')
-        proc_validation.call(command, properties, 'pluginArtifactId')
-        proc_validation.call(command, properties, 'pluginVersion')
-        proc_validation.call(command, properties, 'pluginType')
+      # For installation we allow either to pass the pluginKey (entry in plugins_directory.yml), or the full pluginGroupId/pluginArtifactId/pluginVersion/pluginType
+      if command == 'INSTALL_PLUGIN'
+        if properties['pluginKey'].nil?
+          proc_validation.call(command, properties, 'pluginGroupId')
+          proc_validation.call(command, properties, 'pluginArtifactId')
+          proc_validation.call(command, properties, 'pluginVersion')
+          proc_validation.call(command, properties, 'pluginType')
+        end
+        return true
+      elsif command == 'UNINSTALL_PLUGIN'
+        proc_validation.call(command, properties, 'pluginName')
+        return true
       end
-      return true
     end
 
-    def handle_event(command, artifact_id, version=nil, group_id=nil, packaging=nil, classifier=nil, type=nil, force_download=false)
-      @logger.info "handle_event command=#{command}, artifact_id=#{artifact_id}, version=#{version}, group_id=#{group_id}, packaging=#{packaging}, classifier=#{classifier}, type=#{type}, force_download=#{force_download}"
+    def handle_event(command, plugin_key, plugin_name, artifact_id, version=nil, group_id=nil, packaging=nil, classifier=nil, type=nil, force_download=false)
+      @logger.info "handle_event command=#{command}, plugin_key=#{plugin_key}, plugin_name=#{plugin_name}, artifact_id=#{artifact_id}, version=#{version}, group_id=#{group_id}, packaging=#{packaging}, classifier=#{classifier}, type=#{type}, force_download=#{force_download}"
 
       if command == 'INSTALL_PLUGIN'
-        ::KPM::PluginsInstaller.instance.install(artifact_id, version, group_id, packaging, classifier, type, force_download)
+        plugin_key_or_artifact_id = plugin_key ? plugin_key : artifact_id
+        ::KPM::PluginsInstaller.instance.install(plugin_key_or_artifact_id, version, group_id, packaging, classifier, type, force_download)
       elsif command == 'UNINSTALL_PLUGIN'
-        ::KPM::PluginsInstaller.instance.uninstall(artifact_id, version)
+        ::KPM::PluginsInstaller.instance.uninstall(plugin_name, version)
       else
         @logger.warn("Ignoring unsupported command #{command}")
       end
