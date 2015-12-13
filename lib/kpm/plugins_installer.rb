@@ -27,7 +27,7 @@ module KPM
       if info.nil?
         @logger.warn("Error during installation of plugin #{artifact_id}")
       else
-        path = info[:bundle_dir] ? info[:bundle_dir] : info[:dir_name]
+        path = info[:bundle_dir] || info[:dir_name]
         notify_fs_change(path, :NEW_VERSION)
       end
       info
@@ -39,7 +39,8 @@ module KPM
       if info.nil?
         @logger.warn("Error during installation of plugin #{name}")
       else
-        notify_fs_change(info[:bundle_dir], :NEW_VERSION)
+        path = info[:bundle_dir] || info[:dir_name]
+        notify_fs_change(path, :NEW_VERSION)
       end
       info
     end
