@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    killbill-kpm (0.0.2)
+    killbill-kpm (0.0.3)
       killbill (~> 6.5.0)
       kpm (~> 0.1.2)
 
