@@ -22,7 +22,7 @@ module KPM
 
     # If an earlier version of the plugin is installed, Kill Bill will only start the latest one (see org.killbill.billing.osgi.FileInstall)
     def install(plugin_key, specified_artifact_id, specified_version=nil, specified_group_id=nil, specified_packaging=nil, specified_classifier=nil, specified_type=nil, force_download=false)
-      @logger.info("Instructed to install artifact_id=#{specified_artifact_id} version=#{specified_version} group_id=#{specified_group_id} packaging=#{specified_packaging} classifier=#{specified_classifier} type=#{specified_type} force_download=#{force_download}")
+      @logger.info("Instructed to install plugin_key=#{plugin_key} artifact_id=#{specified_artifact_id} version=#{specified_version} group_id=#{specified_group_id} packaging=#{specified_packaging} classifier=#{specified_classifier} type=#{specified_type} force_download=#{force_download}")
       info = @installer.install_plugin(plugin_key, specified_group_id, specified_artifact_id, specified_packaging, specified_classifier, specified_version, @bundles_dir, specified_type, force_download, @glob_config[:kpm][:verify_sha1])
       if info.nil?
         @logger.warn("Error during installation of plugin #{specified_artifact_id}")
@@ -85,7 +85,7 @@ module KPM
 
       plugin_name = fs_info[-2]
       plugin_version = fs_info[-1]
-      @logger.info("Notifying Kill Bill: state=#{state} plugin_name=#{plugin_name} plugin_version=#{plugin_version} plugin_type=#{plugin_type}")
+      @logger.info("Notifying Kill Bill: state=#{state} plugin_key=#{plugin_key} plugin_name=#{plugin_name} plugin_version=#{plugin_version} plugin_type=#{plugin_type}")
       @kb_apis.plugins_info_api.notify_of_state_changed(state, plugin_key, plugin_name, plugin_version, plugin_type)
     end
 
