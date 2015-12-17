@@ -37,7 +37,7 @@ module KPM
       handle_event(command,
                    event_json['pluginKey'],
                    properties['pluginArtifactId'],
-                   properties['pluginVersion'],
+                   event_json['pluginVersion'],
                    properties['pluginGroupId'],
                    properties['pluginPackaging'],
                    properties['pluginClassifier'],
