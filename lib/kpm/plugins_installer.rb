@@ -69,9 +69,10 @@ module KPM
     def notify_fs_change(plugin_key, path, state)
       return if path.nil?
 
-      # Plugin name should be the directory name (path is something like /var/tmp/bundles/plugins/ruby/killbill-stripe/2.0.0)
+      # Plugin name should be the directory name (path is something like /var/tmp/bundles/plugins/ruby/killbill-stripe/2.0.0 or /var/tmp/bundles/plugins/ruby)
       fs_info = path.to_s.split('/')
       plugin_type = fs_info[-3].upcase
+      plugin_type = fs_info[-1].upcase unless %w(JAVA RUBY).include?(plugin_type)
 
       unless %w(JAVA RUBY).include?(plugin_type)
         @logger.warn("Invalid plugin type #{plugin_type} (path #{path}): Kill Bill won't be notified of new state #{state}")
