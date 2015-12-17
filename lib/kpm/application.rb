@@ -44,13 +44,14 @@ post '/plugins/killbill-kpm/plugins', :provides => 'json' do
       File.open(plugin_path, 'w') do |file|
         file.write(request.body.read)
       end
-      ::KPM::PluginsInstaller.instance.install_from_fs plugin_path,
-                                                       params[:name],
+      ::KPM::PluginsInstaller.instance.install_from_fs params[:key],
+                                                       plugin_path,
                                                        params[:version],
                                                        type
     end
   else
-    info = ::KPM::PluginsInstaller.instance.install params[:artifact_id] || params[:name],
+    info = ::KPM::PluginsInstaller.instance.install params[:key],
+                                                    params[:artifact_id],
                                                     params[:version],
                                                     params[:group_id],
                                                     params[:packaging],
@@ -68,7 +69,7 @@ end
 
 # Uninstall a plugin
 delete '/plugins/killbill-kpm/plugins', :provides => 'json' do
-  modified = ::KPM::PluginsInstaller.instance.uninstall params[:name],
+  modified = ::KPM::PluginsInstaller.instance.uninstall params[:key],
                                                         params[:version]
 
   if modified.empty?
@@ -80,7 +81,7 @@ end
 
 # Restart a plugin
 put '/plugins/killbill-kpm/plugins', :provides => 'json' do
-  modified = ::KPM::PluginsInstaller.instance.restart params[:name],
+  modified = ::KPM::PluginsInstaller.instance.restart params[:key],
                                                       params[:version]
 
   if modified.empty?
