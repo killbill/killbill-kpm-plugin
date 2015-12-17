@@ -21,34 +21,34 @@ module KPM
     end
 
     # If an earlier version of the plugin is installed, Kill Bill will only start the latest one (see org.killbill.billing.osgi.FileInstall)
-    def install(specified_artifact_id, specified_version=nil, specified_group_id=nil, specified_packaging=nil, specified_classifier=nil, specified_type=nil, force_download=false)
+    def install(plugin_key, specified_artifact_id, specified_version=nil, specified_group_id=nil, specified_packaging=nil, specified_classifier=nil, specified_type=nil, force_download=false)
       @logger.info("Instructed to install artifact_id=#{specified_artifact_id} version=#{specified_version} group_id=#{specified_group_id} packaging=#{specified_packaging} classifier=#{specified_classifier} type=#{specified_type} force_download=#{force_download}")
-      info = @installer.install_plugin(specified_group_id, specified_artifact_id, specified_packaging, specified_classifier, specified_version, @bundles_dir, specified_type, force_download, @glob_config[:kpm][:verify_sha1])
+      info = @installer.install_plugin(plugin_key, specified_group_id, specified_artifact_id, specified_packaging, specified_classifier, specified_version, @bundles_dir, specified_type, force_download, @glob_config[:kpm][:verify_sha1])
       if info.nil?
-        @logger.warn("Error during installation of plugin #{artifact_id}")
+        @logger.warn("Error during installation of plugin #{specified_artifact_id}")
       else
         path = info[:bundle_dir] || info[:dir_name]
-        notify_fs_change(path, :NEW_VERSION)
+        notify_fs_change(plugin_key, path, :NEW_VERSION)
       end
       info
     end
 
-    def install_from_fs(file_path, name, version, type)
-      @logger.info("Instructed to install file_path=#{file_path} name=#{name} version=#{version} type=#{type}")
-      info = @installer.install_plugin_from_fs(file_path, name, version, @bundles_dir, type)
+    def install_from_fs(plugin_key, file_path, version, type)
+      @logger.info("Instructed to install file_path=#{file_path} plugin_key=#{plugin_key} version=#{version} type=#{type}")
+      info = @installer.install_plugin_from_fs(plugin_key, file_path, plugin_key, version, @bundles_dir, type)
       if info.nil?
-        @logger.warn("Error during installation of plugin #{name}")
+        @logger.warn("Error during installation of plugin #{plugin_key}")
       else
         path = info[:bundle_dir] || info[:dir_name]
-        notify_fs_change(path, :NEW_VERSION)
+        notify_fs_change(plugin_key, path, :NEW_VERSION)
       end
       info
     end
 
-    def uninstall(plugin_name, version=nil)
-      modified = @manager.uninstall(plugin_name, version || :all)
+    def uninstall(plugin_key, version=nil)
+      modified = @installer.uninstall_plugin(plugin_key, version || :all, @bundles_dir)
       modified.each do |path|
-        notify_fs_change(path, :DISABLED)
+        notify_fs_change(plugin_key, path, :DISABLED)
       end
     end
 
@@ -66,7 +66,7 @@ module KPM
 
     private
 
-    def notify_fs_change(path, state)
+    def notify_fs_change(plugin_key, path, state)
       return if path.nil?
 
       # Plugin name should be the directory name (path is something like /var/tmp/bundles/plugins/ruby/killbill-stripe/2.0.0)
@@ -86,7 +86,7 @@ module KPM
       plugin_name = fs_info[-2]
       plugin_version = fs_info[-1]
       @logger.info("Notifying Kill Bill: state=#{state} plugin_name=#{plugin_name} plugin_version=#{plugin_version} plugin_type=#{plugin_type}")
-      @kb_apis.plugins_info_api.notify_of_state_changed(state, plugin_name, plugin_version, plugin_type)
+      @kb_apis.plugins_info_api.notify_of_state_changed(state, plugin_key, plugin_name, plugin_version, plugin_type)
     end
 
     def configure!(config_file)
