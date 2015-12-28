@@ -21,13 +21,13 @@ module KPM
     end
 
     # If an earlier version of the plugin is installed, Kill Bill will only start the latest one (see org.killbill.billing.osgi.FileInstall)
-    def install(plugin_key, specified_artifact_id, specified_version=nil, specified_group_id=nil, specified_packaging=nil, specified_classifier=nil, specified_type=nil, force_download=false)
+    def install(plugin_key, kb_version, specified_artifact_id, specified_version=nil, specified_group_id=nil, specified_packaging=nil, specified_classifier=nil, specified_type=nil, force_download=false)
       @logger.info("Instructed to install plugin_key=#{plugin_key} artifact_id=#{specified_artifact_id} version=#{specified_version} group_id=#{specified_group_id} packaging=#{specified_packaging} classifier=#{specified_classifier} type=#{specified_type} force_download=#{force_download}")
-      info = @installer.install_plugin(plugin_key, specified_group_id, specified_artifact_id, specified_packaging, specified_classifier, specified_version, @bundles_dir, specified_type, force_download, @glob_config[:kpm][:verify_sha1])
+      info = @installer.install_plugin(plugin_key, kb_version, specified_group_id, specified_artifact_id, specified_packaging, specified_classifier, specified_version, @bundles_dir, specified_type, force_download, @glob_config[:kpm][:verify_sha1])
       if info.nil?
         @logger.warn("Error during installation of plugin #{specified_artifact_id}")
       else
-        path = info[:bundle_dir] || info[:dir_name]
+        path = info[:bundle_dir]
         notify_fs_change(plugin_key, path, :NEW_VERSION)
       end
       info
@@ -69,23 +69,20 @@ module KPM
     def notify_fs_change(plugin_key, path, state)
       return if path.nil?
 
+      @logger.info("notify_fs_change: plugin_key = #{plugin_key}, path=#{path}, state=#{state}")
+
       # Plugin name should be the directory name (path is something like /var/tmp/bundles/plugins/ruby/killbill-stripe/2.0.0 or /var/tmp/bundles/plugins/ruby)
       fs_info = path.to_s.split('/')
       plugin_type = fs_info[-3].upcase
-      plugin_type = fs_info[-1].upcase unless %w(JAVA RUBY).include?(plugin_type)
+      plugin_name = fs_info[-2]
+      plugin_version = fs_info[-1]
 
-      unless %w(JAVA RUBY).include?(plugin_type)
-        @logger.warn("Invalid plugin type #{plugin_type} (path #{path}): Kill Bill won't be notified of new state #{state}")
-        return
-      end
 
       if @kb_apis.nil?
         @logger.warn("APIs not configured: Kill Bill won't be notified of new state #{state}")
         return
       end
 
-      plugin_name = fs_info[-2]
-      plugin_version = fs_info[-1]
       @logger.info("Notifying Kill Bill: state=#{state} plugin_key=#{plugin_key} plugin_name=#{plugin_name} plugin_version=#{plugin_version} plugin_type=#{plugin_type}")
       @kb_apis.plugins_info_api.notify_of_state_changed(state, plugin_key, plugin_name, plugin_version, plugin_type)
     end
