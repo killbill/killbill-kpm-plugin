@@ -51,11 +51,12 @@ module KPM
     private
 
     def get_kb_version
-      return  @kb_version if @kb_version
+      return @kb_version if @kb_version
 
       nodes_info = @kb_apis.killbill_nodes_api.get_nodes_info
       if nodes_info.nil? || nodes_info.empty?
         @logger.warn("Unable to retrieve node info")
+        return nil
       end
 
       # This is incorrect, we need to find the entry for our node, but we don't seem to know who we are -:(
