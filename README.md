@@ -37,7 +37,10 @@ curl -v \
      http://127.0.0.1:8080/plugins/killbill-kpm/plugins?name=stripe
 ```
 
-### Install a plugin
+### Plugin Management
+
+Note that in a multi-nodes deployment, these commands would have to be run on each node. We also provide [Kill Bill apis to manage plugins](http://docs.killbill.io/0.16/plugin_management.html) that work across multi-nodes installation, but they do not allow uploading a plugin binary (e.g: jarfile), so those commands are still very useful in the context of doing plugin development.
+
 
 Upload a plugin:
 
