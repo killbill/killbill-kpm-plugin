@@ -7,9 +7,11 @@ Release builds are available on [Maven Central](http://search.maven.org/#search%
 Kill Bill compatibility
 -----------------------
 
-| Plugin version | Kill Bill version |
-| -------------: | ----------------: |
-| 0.0.y          | 0.16.z            |
+| Plugin version | Kill Bill version  |
+| -------------: | -----------------: |
+| 0.0.y          | 0.16.z             |
+| -------------: | -----------------: |
+| 1.x.y          | 0.18.x (and 0.17.x)|
 
 Usage
 -----
