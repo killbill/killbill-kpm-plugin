@@ -25,7 +25,7 @@
     <groupId>org.kill-bill.billing.plugin.ruby</groupId>
     <artifactId>kpm-plugin</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <name>kpm-plugin</name>
     <url>http://github.com/killbill/killbill-kpm-plugin</url>
     <description>Kill Bill KPM plugin</description>
