@@ -20,8 +20,10 @@ Gem::Specification.new do |s|
 
   s.rdoc_options << '--exclude' << '.'
 
-  s.add_dependency 'killbill', '~> 8.3'
-  s.add_dependency 'kpm', '~> 0.4.0'
+  #s.add_dependency 'killbill', '~> 8.3'
+  #s.add_dependency 'kpm', '~> 0.4.0'
+  s.add_dependency 'activesupport'
+  s.add_dependency 'nexus_cli'
 
   s.add_development_dependency 'jbundler', '~> 0.9.2'
   s.add_development_dependency 'rake', '>= 10.0.0'
