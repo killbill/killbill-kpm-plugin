@@ -1,5 +1,3 @@
-require 'nexus_cli'
-
 module KPM
   class Listener < Killbill::Plugin::Notification
 
@@ -78,8 +76,8 @@ module KPM
       else
         @logger.warn("Ignoring unsupported command #{command}")
       end
-    rescue NexusCli::ArtifactNotFoundException
-      @logger.warn("Unable to #{command} for plugin_key=#{plugin_key}: artifact was not found in Nexus")
+    rescue StandardError => e
+      @logger.warn("Unable to #{command} for plugin_key=#{plugin_key}: #{e.message}")
     end
 
     def properties_to_hash(properties)
