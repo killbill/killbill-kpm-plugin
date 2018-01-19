@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
 
   s.rdoc_options << '--exclude' << '.'
 
-  s.add_dependency 'killbill', '~> 8.3'
+  s.add_dependency 'killbill', '~> 9.2'
   s.add_dependency 'kpm', '~> 0.6.0'
   s.add_dependency 'activesupport', '~> 4.2', '>= 4.2.10'
 
